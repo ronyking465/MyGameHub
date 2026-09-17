@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>Recharge History</title>
+<link rel="stylesheet" href="css/toast.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/navigation.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f5f7fb;
+padding-bottom:90px;
+}
+
+.header{
+background:#2563eb;
+color:#fff;
+padding:18px;
+border-radius:0 0 25px 25px;
+box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+
+.card{
+background:#fff;
+border-radius:16px;
+padding:16px;
+margin-top:16px;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.grid3{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+}
+
+.box{
+background:#f8f8f8;
+padding:15px;
+border-radius:12px;
+text-align:center;
+}
+
+.box h2{
+color:#2563eb;
+font-size:22px;
+font-weight:bold;
+}
+
+.history-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:14px;
+border-bottom:1px solid #eee;
+}
+
+.history-item:last-child{
+border:none;
+}
+
+.status-success{
+color:#16a34a;
+font-weight:bold;
+}
+
+.status-pending{
+color:#f59e0b;
+font-weight:bold;
+}
+
+.status-failed{
+color:#dc2626;
+font-weight:bold;
+}
+
+.bottomNav{
+position:fixed;
+left:0;
+right:0;
+bottom:0;
+background:#fff;
+height:70px;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+box-shadow:0 -2px 10px rgba(0,0,0,.15);
+}
+
+.bottomNav button{
+border:none;
+background:none;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+font-size:13px;
+}
+
+.active{
+color:#2563eb;
+font-weight:bold;
+}
+
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-borderless/borderless.min.css">
+</head>
+
+<body>
+    <div class="max-w-xl mx-auto">
+
+<div class="header">
+
+<div class="flex justify-between items-center">
+
+<button onclick="goDashboard()">
+
+<i class="fas fa-arrow-left"></i>
+
+</button>
+
+<h2 class="text-xl font-bold">
+
+Recharge History
+
+</h2>
+
+<div style="width:25px"></div>
+
+</div>
+
+</div>
+
+<div class="max-w-xl mx-auto p-4">
+
+<div class="card">
+
+<h2 class="text-center font-bold text-lg mb-4">
+
+Recharge Summary
+
+</h2>
+
+<div class="grid3">
+
+<div class="box">
+
+<h2 id="totalRecharge">₹0</h2>
+
+<p>Total</p>
+
+</div>
+
+<div class="box">
+
+<h2 id="todayRecharge">₹0</h2>
+
+<p>Today</p>
+
+</div>
+
+<div class="box">
+
+<h2 id="successCount">0</h2>
+
+<p>Success</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2 class="text-center font-bold mb-3">
+Records
+
+</h2>
+
+<div id="historyList">
+
+<div class="history-item">
+
+<div>
+
+<b>No Recharge</b>
+
+<br>
+
+<small>Waiting...</small>
+
+</div>
+
+<div>
+
+₹0
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-center">
+    <div class="w-full max-w-xl bg-white border-t shadow-2xl">
+        <div class="grid grid-cols-4 h-16">
+          <button id="homeNav" class="flex flex-col items-center justify-center text-gray-500"
+onclick="goDashboard()">
+    <i class="fas fa-house text-xl"></i>
+    <span class="text-xs mt-1">Home</span>
+</button>
+            <button id="shareNav" class="flex flex-col items-center justify-center text-gray-500"
+            onclick="goShare()">
+    <i class="fas fa-share-alt text-xl"></i>
+    <span class="text-xs mt-1">Share</span>
+</button>
+            <button id="teamNav" class="flex flex-col items-center justify-center text-gray-500"
+onclick="goTeam()">
+    <i class="fas fa-users text-xl"></i>
+    <span class="text-xs mt-1">Team</span>
+</button>
+           <button id="myNav" class="flex flex-col items-center justify-center text-gray-500"
+onclick="goMy()">
+    <i class="fas fa-user text-xl"></i>
+    <span class="text-xs mt-1">My</span>
+</button>
+        </div> 
+    </div>
+    </div>
+    </div>
+        
+<script>
+    fetch('/api/history')
+    .then(res => res.json())
+    .then(data => {
+        const list = document.getElementById("historyList");
+        list.innerHTML = ""; // लिस्ट खाली करें
+
+        data.forEach(item => {
+            list.innerHTML += `
+            <div class="history-item">
+                <div><b>Recharge</b><br><small>${item.date}</small></div>
+                <div style="text-align:right;">
+                    <div>₹${item.amount}</div>
+                    <div class="status-success">${item.status}</div>
+                </div>
+            </div>`;
+        });
+    })
+    .catch(err => console.error("Error:", err));
+
+
+
+
+//===========================
+// Recharge History
+//===========================
+
+// पुराने डेमो डेटा वाले कोड को हटा दें और यह लिखें:
+fetch('http://localhost:3000/api/history')
+    .then(response => response.json())
+    .then(data => {
+        let historyList = document.getElementById("historyList");
+        let html = "";
+        
+        if (data.length === 0) {
+            html = '<div class="history-item">No Recharge Found</div>';
+        } else {
+            data.forEach(item => {
+                html += `
+                <div class="history-item">
+                    <div><b>Recharge</b><br><small>${item.date}</small></div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:bold;">₹${item.amount}</div>
+                        <div class="badge ${item.status.toLowerCase()}">${item.status}</div>
+                    </div>
+                </div>`;
+            });
+        }
+        historyList.innerHTML = html;
+    })
+    .catch(error => console.error('Error loading history:', error));
+
+
+// Demo Data
+if(rechargeHistory.length==0){
+
+rechargeHistory=[
+
+{
+amount:500,
+status:"Success",
+date:"Today 09:15 AM"
+},
+
+{
+amount:1200,
+status:"Pending",
+date:"Yesterday 08:30 PM"
+},
+
+{
+amount:300,
+status:"Failed",
+date:"02 Jul 2026"
+},
+
+{
+amount:2000,
+status:"Success",
+date:"30 Jun 2026"
+}
+
+];
+
+localStorage.setItem(
+"rechargeHistory",
+JSON.stringify(rechargeHistory)
+);
+
+}
+
+
+//===========================
+// Summary
+//===========================
+
+let totalRecharge=0;
+
+let todayRecharge=0;
+
+let successCount=0;
+
+rechargeHistory.forEach(item=>{
+
+if(item.status=="Success"){
+
+totalRecharge+=item.amount;
+
+successCount++;
+
+}
+
+if(item.date.includes("Today")){
+
+todayRecharge+=item.amount;
+
+}
+
+});
+
+document.getElementById("totalRecharge").innerText="₹"+totalRecharge;
+
+document.getElementById("todayRecharge").innerText="₹"+todayRecharge;
+
+document.getElementById("successCount").innerText=successCount;
+
+
+//===========================
+// History List
+//===========================
+
+let html="";
+
+rechargeHistory.forEach(item=>{
+
+let cls="success";
+
+if(item.status=="Pending") cls="pending";
+
+if(item.status=="Failed") cls="failed";
+
+html+=`
+
+<div class="history-item">
+
+<div>
+
+<b>Recharge</b>
+
+<br>
+
+<small style="color:#888">
+
+${item.date}
+
+</small>
+
+</div>
+
+<div style="text-align:right;">
+
+<div style="font-weight:bold;">
+
+₹${item.amount}
+
+</div>
+
+<div class="badge ${cls}">
+
+${item.status}
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("historyList").innerHTML=html;
+
+
+</script>
+<script src="js/toast.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="css/confirm.css">
+
+<script src="js/confirm.js"></script></body>
+</html>

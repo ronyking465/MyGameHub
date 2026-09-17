@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mygame-api",
+  "main": "./worker.mjs",
+  "compatibility_date": "2026-09-17",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*",
+      "/",
+      "/health",
+      "/render-test",
+      "/hello",
+      "/register",
+      "/test-qr"
+    ]
+  },
+  "triggers": {
+    "crons": ["* * * * *", "30 18 * * *"]
+  }
+}
